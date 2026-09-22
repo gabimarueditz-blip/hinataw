@@ -82,6 +82,33 @@ const UploadQueueContext = createContext<UploadQueueValue | null>(null);
 const MAX_ATTEMPTS = 4;
 const RETRY_DELAYS = [1200, 3000, 7000];
 
+/**
+ * Convex's generated upload URL has a hard 2-minute server-side timeout.
+ * Files that cannot physically make it in that window are rejected before
+ * starting, with a helpful pointer to the link/api.video modes instead of a
+ * mysterious "network dropped" failure after 4 wasted attempts.
+ */
+const TWO_MINUTES_MS = 2 * 60 * 1000;
+/** Assume a sustained 12 Mbit/s uplink as a generous-but-realistic floor. */
+const ASSUMED_BITS_PER_SECOND = 12 * 1000 * 1000;
+/** Hard client-side cap so a hung connection fails in ~2:10, not never. */
+const UPLOAD_TIMEOUT_MS = TWO_MINUTES_MS + 10_000;
+
+export function estimateUploadSeconds(sizeBytes: number, bitsPerSecond = ASSUMED_BITS_PER_SECOND) {
+  return (sizeBytes * 8) / bitsPerSecond;
+}
+
+function classifyFile(file: File): string | null {
+  if (estimateUploadSeconds(file.size) > TWO_MINUTES_MS / 1000) {
+    const minutes = Math.ceil(estimateUploadSeconds(file.size) / 60);
+    return (
+      `“${file.name}” needs roughly ${minutes} min to upload, but Convex storage cuts ` +
+      "every upload off at 2 minutes. Use the Link or api.video mode for files this big."
+    );
+  }
+  return null;
+}
+
 function uploadOnce(
   file: File,
   url: string,
@@ -92,6 +119,8 @@ function uploadOnce(
     const xhr = new XMLHttpRequest();
     registerXhr(xhr);
     xhr.open("POST", url, true);
+    // Convex cuts the upload off server-side at 2 minutes; fail cleanly here.
+    xhr.timeout = UPLOAD_TIMEOUT_MS;
     xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
 
     xhr.upload.onprogress = (event) => {
@@ -115,10 +144,31 @@ function uploadOnce(
         }
         return;
       }
+      if (xhr.status === 413) {
+        reject(
+          new NonRetryableError(
+            "The storage rejected this file as too large (HTTP 413). Use a stream link or api.video instead.",
+          ),
+        );
+        return;
+      }
+      if (xhr.status === 401 || xhr.status === 403) {
+        reject(
+          new NonRetryableError(
+            "The upload link was rejected — your admin session may have expired. Sign in again and retry.",
+          ),
+        );
+        return;
+      }
       reject(new Error(`Upload failed with status ${xhr.status}.`));
     };
     xhr.onerror = () => reject(new Error("Network dropped during upload."));
-    xhr.ontimeout = () => reject(new Error("Upload timed out."));
+    xhr.ontimeout = () =>
+      reject(
+        new NonRetryableError(
+          "Upload hit the 2-minute storage limit. Use a stream link or api.video for large files.",
+        ),
+      );
     xhr.onabort = () => reject(new Error("Upload cancelled."));
 
     xhr.send(file);
@@ -126,6 +176,9 @@ function uploadOnce(
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Errors that will never succeed on retry — fail immediately, no backoff. */
+export class NonRetryableError extends Error {}
 
 export function UploadQueueProvider({ children }: { children: ReactNode }) {
   const [jobs, setJobs] = useState<UploadJob[]>([]);
@@ -170,7 +223,7 @@ export function UploadQueueProvider({ children }: { children: ReactNode }) {
             return;
           }
           const message = error instanceof Error ? error.message : "Upload failed.";
-          if (attempt >= MAX_ATTEMPTS) {
+          if (error instanceof NonRetryableError || attempt >= MAX_ATTEMPTS) {
             patchJob(id, { status: "error", error: message });
             record.reject(new Error(message));
             return;
@@ -213,10 +266,19 @@ export function UploadQueueProvider({ children }: { children: ReactNode }) {
         reject: rejectFn,
       });
       setJobs((prev) => [job, ...prev].slice(0, 12));
+
+      const tooBig = classifyFile(file);
+      if (tooBig) {
+        // Fail before burning bandwidth on an upload that cannot finish.
+        patchJob(id, { status: "error", error: tooBig });
+        rejectFn(new Error(tooBig));
+        return { id, promise };
+      }
+
       void run(id);
       return { id, promise };
     },
-    [run],
+    [run, patchJob],
   );
 
   const retry = useCallback(

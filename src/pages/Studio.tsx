@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { useUploadQueue } from "@/components/upload-queue";
+import { useUploadQueue, estimateUploadSeconds } from "@/components/upload-queue";
 import { GENRE_SUGGESTIONS, formatDuration, timeAgo } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { useAction, useMutation, useQuery } from "convex/react";
@@ -1063,6 +1063,17 @@ function EpisodeManager({
       return;
     }
     setVideoName(file.name);
+    // Warn before the queue rejects it: Convex storage enforces a hard
+    // 2-minute upload window, so huge files must go through link/api.video.
+    const projectedMinutes = estimateUploadSeconds(file.size) / 60;
+    if (projectedMinutes > 2) {
+      toast.warning(
+        `“${file.name}” is too large for a direct upload (~${Math.ceil(projectedMinutes)} min ` +
+          "against a 2-minute server cap). The upload will be rejected — switch to the Link " +
+          "or api.video tab for files this big.",
+        { duration: 10_000 },
+      );
+    }
     const { promise } = enqueue({
       file,
       kind: "video",
