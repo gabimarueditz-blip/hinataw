@@ -146,7 +146,8 @@ export function VideoPlayer({
   const [activeSrc, setActiveSrc] = useState(src);
   const [hlsLevels, setHlsLevels] = useState<{ index: number; label: string }[]>([]);
   const [selectedLevel, setSelectedLevel] = useState(-1);
-  const [selectedQuality, setSelectedQuality] = useState(0);
+  const [selectedQuality, setSelectedQuality] = useState(-1);
+  const [effectiveLevel, setEffectiveLevel] = useState<number | null>(null);
   const [playing, setPlaying] = useState(false);
   const [buffering, setBuffering] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -217,6 +218,19 @@ export function VideoPlayer({
             label: level.height ? `${level.height}p` : `${Math.round((level.bitrate ?? 0) / 1000)}kbps`,
           }));
           setHlsLevels(levels);
+
+          // Prefer a stored quality preference. If none, pick a level that matches
+          // the current player size so the stream starts at a sensible bandwidth.
+          let chosenIndex = qualities.findIndex((q) => q.label !== "Auto");
+          if (chosenIndex < 0 && levels.length > 0) {
+            const targetHeight = Math.min(video.clientHeight || 180, levels[levels.length - 1]?.height ?? 720);
+            chosenIndex = levels.reduce((best, level, index) => {
+              const candidate = Math.abs((level.height ?? targetHeight) - targetHeight);
+              return candidate < Math.abs((levels[best]?.height ?? targetHeight) - targetHeight) ? index : best;
+            }, 0);
+          }
+          setSelectedQuality(chosenIndex < 0 ? -1 : chosenIndex);
+
           if (autoPlay) void video.play().catch(() => undefined);
         });
 
@@ -237,6 +251,22 @@ export function VideoPlayer({
             return;
           }
           setError("Stream interrupted. Tap retry to reconnect.");
+        });
+        hls.on(HlsCtor.Events.LEVEL_SWITCHED, () => {
+          if (hls?.levels && selectedLevel >= 0 && selectedLevel < hls.levels.length) {
+            const level = hls.levels[selectedLevel];
+            if (videoRef.current && videoRef.current.videoWidth > 0) {
+              const targetSize = Math.min(videoRef.current.clientHeight, level.height ?? 0);
+              if (Math.abs((level.height ?? 0) - targetSize) > 120) {
+                const next = hls.levels.reduce((best, candidate, index) => {
+                  if (index === selectedLevel) return best;
+                  return Math.abs((candidate.height ?? 0) - targetSize) < Math.abs((hls.levels[best]?.height ?? 0) - targetSize) ? index : best;
+                }, selectedLevel);
+                setSelectedLevel(next);
+                if (hls.currentLevel !== next) hls.currentLevel = next;
+              }
+            }
+          }
         });
         return;
       }
