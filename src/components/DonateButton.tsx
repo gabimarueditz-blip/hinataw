@@ -67,12 +67,12 @@ export function DonateButton({
           className,
         )}
       >
-        <span className="relative flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-clay-blush/40 to-clay-lilac/40 text-clay-blush">
+        <span className="relative flex items-center justify-center p-1 text-clay-blush">
           <span
             aria-hidden
-            className="absolute inset-0 animate-ping rounded-full bg-clay-blush/25"
+            className="absolute size-6 animate-ping rounded-full bg-clay-blush/25"
           />
-          <Heart className="relative size-5 fill-current" />
+          <Heart className="relative size-3.5 fill-current" />
         </span>
         <span className="text-[9px] leading-none font-extrabold tracking-[0.06em] whitespace-nowrap text-clay-blush uppercase">
           <span className="sm:hidden">Donate here</span>
