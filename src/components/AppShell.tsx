@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { BrandArt } from "./BrandArt";
-import { Compass, Home, LogOut, Search, Sparkles, UserRound } from "lucide-react";
+import { Compass, Home, LogOut, Search, Sparkles, UserRound, Users } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { UploadDock } from "@/components/upload-queue";
@@ -11,6 +11,7 @@ import { DonateButton } from "@/components/DonateButton";
 const NAV = [
   { to: "/home", label: "Home", icon: Home },
   { to: "/search", label: "Search", icon: Search },
+  { to: "/characters", label: "Cast", icon: Users },
   { to: "/categories", label: "Categories", icon: Compass },
   { to: "/profile", label: "Profile", icon: UserRound },
 ];
@@ -96,7 +97,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
           <BrandMark />
 
           <nav className="hidden items-center gap-1 md:flex">
-            {NAV.slice(0, 3).map((item) => (
+            {NAV.slice(0, 4).map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}

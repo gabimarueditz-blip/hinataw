@@ -23,6 +23,7 @@ const AuthPage = lazy(() => import("./pages/Auth.tsx"));
 const Home = lazy(() => import("./pages/Home.tsx"));
 const Search = lazy(() => import("./pages/Search.tsx"));
 const Categories = lazy(() => import("./pages/Categories.tsx"));
+const Characters = lazy(() => import("./pages/Characters.tsx"));
 const Profile = lazy(() => import("./pages/Profile.tsx"));
 const SeriesDetail = lazy(() => import("./pages/SeriesDetail.tsx"));
 const Watch = lazy(() => import("./pages/Watch.tsx"));
@@ -153,6 +154,7 @@ createRoot(document.getElementById("root")!).render(
                   <Route path="/home" element={<Home />} />
                   <Route path="/search" element={<Search />} />
                   <Route path="/categories" element={<Categories />} />
+                  <Route path="/characters" element={<Characters />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/series/:seriesId" element={<SeriesDetail />} />
                   <Route path="/watch/:episodeId" element={<Watch />} />

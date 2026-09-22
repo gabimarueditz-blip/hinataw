@@ -10,6 +10,7 @@ import {
   Sparkles,
   Star,
   Tv,
+  Users,
 } from "lucide-react";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
@@ -84,15 +85,26 @@ export default function Home() {
               : "Adaptive quality, 1-click downloads, resume anywhere."}
           </p>
         </div>
-        <Link to="/search">
-          <Button
-            variant="secondary"
-            className="clay-sm clay-press h-11 rounded-full px-5 font-bold"
-          >
-            <Search className="mr-2 size-4" />
-            Search the library
-          </Button>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link to="/search">
+            <Button
+              variant="secondary"
+              className="clay-sm clay-press h-11 rounded-full px-5 font-bold"
+            >
+              <Search className="mr-2 size-4" />
+              Search the library
+            </Button>
+          </Link>
+          <Link to="/characters">
+            <Button
+              variant="secondary"
+              className="clay-sm clay-press h-11 rounded-full px-5 font-bold"
+            >
+              <Users className="mr-2 size-4" />
+              Meet the cast
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* ------------------------------ hero ------------------------------ */}
