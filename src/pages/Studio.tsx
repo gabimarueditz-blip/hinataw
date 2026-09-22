@@ -161,7 +161,7 @@ function UnlockCard() {
               id="studio-id"
               value={adminId}
               onChange={(event) => setAdminId(event.target.value)}
-              placeholder="7788"
+              placeholder="Your admin ID"
               className="clay-well h-11 rounded-2xl border-none"
             />
           </div>
@@ -186,16 +186,9 @@ function UnlockCard() {
           <Button type="submit" disabled={busy} className="clay-press h-11 w-full rounded-2xl font-bold">
             {busy ? <Loader2 className="size-4 animate-spin" /> : "Unlock studio"}
           </Button>
-          <button
-            type="button"
-            onClick={() => {
-              setAdminId("7788");
-              setPassword("123");
-            }}
-            className="w-full rounded-2xl bg-clay-mint/15 px-3 py-2 text-[11px] font-bold text-clay-mint"
-          >
-            Fill demo credentials (7788 / 123)
-          </button>
+          <p className="rounded-2xl bg-clay-mint/15 px-3 py-2 text-center text-[11px] leading-5 font-bold text-clay-mint">
+            Credentials are configured by the site owner in the Keys tab.
+          </p>
         </div>
 
         <Link
@@ -870,9 +863,10 @@ function StudioWorkspace() {
               </li>
               <li className="flex gap-2">
                 <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-clay-mint" />
-                Set <code className="text-foreground">ADMIN_ID</code> and{" "}
+                Admin login stays disabled until you set{" "}
+                <code className="text-foreground">ADMIN_ID</code> and{" "}
                 <code className="text-foreground">ADMIN_PASSWORD</code> in the Keys
-                tab to replace the demo 7788 / 123 pair.
+                tab — there are no built-in or demo credentials.
               </li>
               <li className="flex gap-2">
                 <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-clay-mint" />

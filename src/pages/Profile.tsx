@@ -152,7 +152,8 @@ export default function Profile() {
               </div>
               <p className="text-[11px] leading-5 text-muted-foreground">
                 Uploads, edits, publishing and deletion stay behind this check.
-                Demo credentials: 7788 / 123.
+                Credentials are configured by the site owner, not published
+                here.
               </p>
               <div className="space-y-1.5">
                 <Label htmlFor="profile-admin-id" className="text-[11px] font-bold">
@@ -160,10 +161,9 @@ export default function Profile() {
                 </Label>
                 <Input
                   id="profile-admin-id"
-                  inputMode="numeric"
                   value={adminId}
                   onChange={(event) => setAdminId(event.target.value)}
-                  placeholder="7788"
+                  placeholder="Your admin ID"
                   className="clay-well h-10 rounded-2xl border-none"
                 />
               </div>

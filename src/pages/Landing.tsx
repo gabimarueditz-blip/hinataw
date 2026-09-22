@@ -444,8 +444,7 @@ export default function Landing() {
             Hinataw.exe · clay-soft streaming · built with Convex, React and HLS
           </p>
           <p className="text-xs text-muted-foreground">
-            Demo admin ID <span className="font-bold text-foreground">7788</span> ·
-            password <span className="font-bold text-foreground">123</span>
+            Admin studio access is private — guests stream, admins publish.
           </p>
         </div>
       </footer>

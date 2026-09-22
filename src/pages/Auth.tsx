@@ -16,7 +16,6 @@ import {
   Loader2,
   Lock,
   ShieldCheck,
-  Sparkles,
   UserRound,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -68,11 +67,7 @@ export default function AuthPage({ redirectAfterAuth = "/home" }: AuthProps) {
         const result = await adminLogin({ adminId, password });
         if (cancelled) return;
         settledRef.current = true;
-        toast.success(
-          result.usingDemoCredentials
-            ? "Studio unlocked with the demo credentials"
-            : "Studio unlocked",
-        );
+        toast.success("Studio unlocked");
         setPendingAdmin(false);
         navigate("/studio", { replace: true });
       } catch (err) {
@@ -81,7 +76,7 @@ export default function AuthPage({ redirectAfterAuth = "/home" }: AuthProps) {
           err instanceof Error ? err.message : "Admin sign-in failed.";
         setError(
           message.includes("Invalid")
-            ? "Invalid admin ID or password. Demo access is 7788 / 123."
+            ? "Invalid admin ID or password."
             : message,
         );
         setPendingAdmin(false);
@@ -128,19 +123,15 @@ export default function AuthPage({ redirectAfterAuth = "/home" }: AuthProps) {
         setPendingAdmin(true);
         return;
       }
-      const result = await adminLogin({ adminId, password });
+      await adminLogin({ adminId, password });
       settledRef.current = true;
-      toast.success(
-        result.usingDemoCredentials
-          ? "Studio unlocked with the demo credentials"
-          : "Studio unlocked",
-      );
+      toast.success("Studio unlocked");
       navigate("/studio", { replace: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Admin sign-in failed.";
       setError(
         message.includes("Invalid")
-          ? "Invalid admin ID or password. Demo access is 7788 / 123."
+          ? "Invalid admin ID or password."
           : message,
       );
       setBusy(false);
@@ -254,11 +245,10 @@ export default function AuthPage({ redirectAfterAuth = "/home" }: AuthProps) {
                     </Label>
                     <Input
                       id="adminId"
-                      inputMode="numeric"
                       autoComplete="off"
                       value={adminId}
                       onChange={(event) => setAdminId(event.target.value)}
-                      placeholder="7788"
+                      placeholder="Your admin ID"
                       disabled={busy}
                       className="clay-well h-11 rounded-2xl border-none text-sm font-semibold"
                     />
@@ -308,17 +298,11 @@ export default function AuthPage({ redirectAfterAuth = "/home" }: AuthProps) {
                     )}
                   </Button>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAdminId("7788");
-                      setPassword("123");
-                    }}
-                    className="clay-press flex w-full items-center justify-center gap-2 rounded-2xl bg-clay-mint/15 px-3 py-2 text-[11px] font-bold text-clay-mint"
-                  >
-                    <Sparkles className="size-3.5" />
-                    Use demo credentials (7788 / 123)
-                  </button>
+                  <p className="flex items-start gap-2 text-[11px] leading-5 text-muted-foreground">
+                    <Info className="mt-0.5 size-3.5 shrink-0" />
+                    Admin credentials are managed by the site owner in the Keys
+                    tab — reach out if you need studio access.
+                  </p>
                 </motion.form>
               </AnimatePresence>
             )}

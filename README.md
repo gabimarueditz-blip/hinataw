@@ -23,9 +23,11 @@ Built on the Freebuff web stack — React + Vite + Tailwind v4 + shadcn/ui, with
 ## Login
 
 - **Guest login** — anonymous Convex Auth session. Watch everything, upload nothing.
-- **Admin login** — demo credentials **7788 / 123**, verified inside a Convex
-  mutation (`api.admin.adminLogin`). Success promotes the session to the `admin`
-  role; every admin mutation re-checks that role server-side.
+- **Admin login** — credentials are set by the owner as `ADMIN_ID` /
+  `ADMIN_PASSWORD` and verified inside a Convex mutation
+  (`api.admin.adminLogin`). No demo credentials ship with the app; until those
+  vars are set, admin login is disabled. Success promotes the session to the
+  `admin` role; every admin mutation re-checks that role server-side.
 
 ## Video pipeline
 
@@ -60,7 +62,7 @@ Set these in the project's **Keys** tab:
 
 | Variable | Purpose |
 | --- | --- |
-| `ADMIN_ID`, `ADMIN_PASSWORD` | Replace the demo 7788 / 123 admin credentials |
+| `ADMIN_ID`, `ADMIN_PASSWORD` | Required for admin login — no built-in credentials exist |
 | `API_VIDEO_API_KEY` | Enable automatic 480p/720p/1080p HLS transcoding of uploads |
 
 Without an `API_VIDEO_API_KEY` you can still ship: upload files, or paste a direct

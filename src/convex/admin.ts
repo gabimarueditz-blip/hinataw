@@ -6,14 +6,12 @@ import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/s
  * Admin console access for Hinataw.exe.
  *
  * Guests sign in anonymously first (that is the "Guest Login" button), then an
- * admin unlocks the studio with the admin ID + password. Credentials are
- * verified server-side — with `ADMIN_ID` / `ADMIN_PASSWORD` Convex env vars when
- * set, otherwise the documented demo pair (7788 / 123). On success the user's
- * role is promoted to `admin`, and every admin mutation re-checks that role.
+ * admin unlocks the studio with the admin ID + password, verified server-side
+ * against the `ADMIN_ID` / `ADMIN_PASSWORD` Convex env vars. There are no
+ * built-in credentials: until those vars are set in the Keys tab, admin login
+ * stays disabled. On success the user's role is promoted to `admin`, and every
+ * admin mutation re-checks that role.
  */
-
-const DEMO_ADMIN_ID = "7788";
-const DEMO_ADMIN_PASSWORD = "123";
 
 /** length-safe, timing-resistant comparison of two short strings */
 function matches(input: string, expected: string) {
@@ -75,9 +73,14 @@ export const adminLogin = mutation({
       throw new Error("Start a guest session first, then unlock the studio.");
     }
 
-    const expectedId = process.env.ADMIN_ID?.trim() || DEMO_ADMIN_ID;
-    const expectedPassword = process.env.ADMIN_PASSWORD || DEMO_ADMIN_PASSWORD;
-    const usingDemoCredentials = !process.env.ADMIN_PASSWORD;
+    const expectedId = process.env.ADMIN_ID?.trim();
+    const expectedPassword = process.env.ADMIN_PASSWORD;
+
+    if (!expectedId || !expectedPassword) {
+      throw new Error(
+        "Admin login is not configured yet. Set ADMIN_ID and ADMIN_PASSWORD in the Keys tab.",
+      );
+    }
 
     if (!matches(adminId, expectedId) || !matches(password, expectedPassword)) {
       await ctx.db.insert("activity", {
@@ -98,7 +101,7 @@ export const adminLogin = mutation({
       createdAt: now,
     });
 
-    return { ok: true, usingDemoCredentials };
+    return { ok: true };
   },
 });
 
