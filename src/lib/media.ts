@@ -43,6 +43,39 @@ export function isHlsSource(url: string) {
   return url.toLowerCase().includes(".m3u8");
 }
 
+/* ----------------------------- Google Drive ------------------------------ */
+
+const DRIVE_FILE = /drive\.google\.com\/file\/d\/([^/&?]+)/;
+const DRIVE_ID_QUERY = /[?&]id=([^&/]+)/;
+
+/** Pull the file id out of any Google Drive share-link shape. */
+export function driveFileId(url: string): string | null {
+  return url.match(DRIVE_FILE)?.[1] ?? url.match(DRIVE_ID_QUERY)?.[1] ?? null;
+}
+
+/** The direct-download endpoint a <video> element can actually stream. */
+export function driveDirectUrl(fileId: string): string {
+  return `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`;
+}
+
+/** The viewer page, used as a manual fallback when direct playback is blocked. */
+export function driveShareLink(fileId: string): string {
+  return `https://drive.google.com/file/d/${fileId}/view`;
+}
+
+/**
+ * Heal legacy saved URLs at playback time: old share links and the retired
+ * /uc?export=download form (which now serves an HTML interstitial that breaks
+ * <video>) are upgraded to the current direct endpoint.
+ */
+export function normalizeVideoSource(url: string): string {
+  if (!url.includes("drive.google.com")) return url;
+  const id = driveFileId(url);
+  if (!id) return url;
+  if (url.includes("drive.usercontent.google.com")) return url;
+  return driveDirectUrl(id);
+}
+
 export function formatDuration(totalSeconds?: number) {
   if (!totalSeconds || totalSeconds <= 0) return "—";
   const minutes = Math.round(totalSeconds / 60);

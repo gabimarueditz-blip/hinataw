@@ -108,12 +108,15 @@ export const inspectLink = action({
     if (driveId) {
       notes.push("Google Drive link converted to a direct stream URL.");
       notes.push(
-        "Drive throttles large files — for 1 GB+ uploads use a file upload or api.video instead.",
+        "The file must be shared as “Anyone with the link”. Large or quota-limited files may be refused by Drive — if playback fails, host the file elsewhere or use api.video.",
       );
+      // drive.usercontent.google.com is Drive's current direct-download host;
+      // the older /uc?export=download form now serves an HTML interstitial for
+      // big files, which a <video> element cannot play.
       return {
         ok: true,
         kind: "file",
-        directUrl: `https://drive.google.com/uc?export=download&id=${driveId}`,
+        directUrl: `https://drive.usercontent.google.com/download?id=${driveId}&export=download&confirm=t`,
         host: parsed.hostname,
         notes,
       };
@@ -124,7 +127,7 @@ export const inspectLink = action({
       return { ok: true, kind: "hls", directUrl: raw, host: parsed.hostname, notes };
     }
 
-    if (parsed.hostname === "drive.google.com") {
+    if (parsed.hostname === "drive.google.com" || parsed.hostname === "drive.usercontent.google.com") {
       notes.push("Share the file as “Anyone with the link” or playback will fail.");
     } else {
       notes.push("Direct video link — the player will stream it natively.");

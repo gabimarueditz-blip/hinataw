@@ -1,10 +1,17 @@
 import { cn } from "@/lib/utils";
-import { formatClock, isHlsSource } from "@/lib/media";
+import {
+  driveFileId,
+  driveShareLink,
+  formatClock,
+  isHlsSource,
+  normalizeVideoSource,
+} from "@/lib/media";
 import type Hls from "hls.js";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
   Check,
+  ExternalLink,
   Gauge,
   Loader2,
   Maximize,
@@ -181,12 +188,15 @@ export function VideoPlayer({
   // an in-flight session is never restarted mid-playback.
   const startAtRef = useRef(startAt);
 
-  const [activeSrc, setActiveSrc] = useState(src);
+  const [activeSrc, setActiveSrc] = useState(() => normalizeVideoSource(src));
   const [hlsLevels, setHlsLevels] = useState<{ index: number; label: string; height?: number }[]>([]);
-  // The tier the viewer asked for — localStorage-backed, -1 = Auto (adaptive).
   // The viewer's quality pick — localStorage-backed, -1 = Auto (adaptive).
   const [tier, setTier] = useState<number>(() => readStoredHeight() ?? AUTO);
   const tierRef = useRef(tier);
+  // Set when the source itself is unreachable (e.g. Drive refuses the file):
+  // the error card then offers opening the file where it lives instead of a
+  // retry that can only fail the same way again.
+  const [unplayableSrc, setUnplayableSrc] = useState<string | null>(null);
 
   useEffect(() => {
     tierRef.current = tier;
@@ -228,13 +238,15 @@ export function VideoPlayer({
         resumedRef.current = false;
         setShowResume(startAtRef.current > 10);
         setError(null);
+        setUnplayableSrc(null);
         return;
       }
     }
-    setActiveSrc(src);
+    setActiveSrc(normalizeVideoSource(src));
     resumedRef.current = false;
     setShowResume(startAtRef.current > 10);
     setError(null);
+    setUnplayableSrc(null);
   }, [src]);
 
   /* --------------------------- source loading --------------------------- */
@@ -310,10 +322,22 @@ export function VideoPlayer({
       if (autoPlay) void video.play().catch(() => undefined);
     };
 
+    const onVideoError = () => {
+      if (cancelled) return;
+      // Only flag the source itself when nothing is loaded at all; a decode
+      // hiccup mid-stream should surface through the retry path instead.
+      if (video.readyState === 0 && video.networkState === video.NETWORK_NO_SOURCE) {
+        setUnplayableSrc(activeSrc);
+        setError("This file refuses to stream from its host. Open it where it lives to watch.");
+      }
+    };
+    video.addEventListener("error", onVideoError);
+
     void setup().catch(() => setError("Could not start playback for this source."));
 
     return () => {
       cancelled = true;
+      video.removeEventListener("error", onVideoError);
       if (hls) hls.destroy();
       hlsRef.current = null;
     };
@@ -567,6 +591,7 @@ export function VideoPlayer({
 
   const retry = () => {
     setError(null);
+    setUnplayableSrc(null);
     const video = videoRef.current;
     if (hlsRef.current) {
       hlsRef.current.startLoad();
@@ -628,6 +653,18 @@ export function VideoPlayer({
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 px-6 text-center">
           <AlertTriangle className="size-7 text-clay-butter" />
           <p className="max-w-sm text-sm font-semibold text-white">{error}</p>
+          {unplayableSrc && driveFileId(unplayableSrc) && (
+            <a
+              href={driveShareLink(driveFileId(unplayableSrc) as string)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="clay-press flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-bold text-zinc-900"
+            >
+              <ExternalLink className="size-3.5" />
+              Watch on Google Drive
+              <span className="text-[10px] font-semibold opacity-70">(sign-in or quota issue)</span>
+            </a>
+          )}
           <button
             type="button"
             onClick={retry}
