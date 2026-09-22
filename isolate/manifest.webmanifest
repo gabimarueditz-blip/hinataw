@@ -4,13 +4,19 @@
   "description": "Clay-soft anime and movie streaming with adaptive HLS playback, resume-anywhere history and an admin studio.",
   "start_url": "/home",
   "display": "standalone",
-  "background_color": "#2b2338",
-  "theme_color": "#2b2338",
+  "background_color": "#151020",
+  "theme_color": "#151020",
   "icons": [
     {
-      "src": "/logo.png",
-      "sizes": "any",
-      "type": "image/png",
+      "src": "/logo-apple.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo-small.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]
