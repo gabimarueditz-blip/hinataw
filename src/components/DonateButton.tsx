@@ -47,7 +47,7 @@ export function DonateButton({
   label = "Donate",
   className,
 }: {
-  variant?: "icon" | "link" | "button";
+  variant?: "icon" | "link" | "button" | "featured";
   label?: string;
   className?: string;
 }) {
@@ -56,7 +56,30 @@ export function DonateButton({
   const hasQr = qrState === "ok";
 
   const trigger =
-    variant === "icon" ? (
+    variant === "featured" ? (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        title="Support the creator"
+        aria-label="Support the creator with a donation"
+        className={cn(
+          "clay clay-press flex flex-col items-center gap-1.5 rounded-[1.4rem] px-3 py-2",
+          className,
+        )}
+      >
+        <span className="relative flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-clay-blush/40 to-clay-lilac/40 text-clay-blush">
+          <span
+            aria-hidden
+            className="absolute inset-0 animate-ping rounded-full bg-clay-blush/25"
+          />
+          <Heart className="relative size-5 fill-current" />
+        </span>
+        <span className="text-[9px] leading-none font-extrabold tracking-[0.06em] whitespace-nowrap text-clay-blush uppercase">
+          <span className="sm:hidden">Donate here</span>
+          <span className="hidden sm:inline">Support the creator</span>
+        </span>
+      </button>
+    ) : variant === "icon" ? (
       <button
         type="button"
         onClick={() => setOpen(true)}

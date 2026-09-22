@@ -117,7 +117,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
           </nav>
 
           <div className="flex items-center gap-2">
-            <DonateButton label="Donate to the creator" />
+            <DonateButton variant="featured" />
             {isAdmin && <AdminChip />}
             <NavLink
               to="/profile"
