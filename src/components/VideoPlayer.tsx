@@ -48,6 +48,44 @@ interface VideoPlayerProps {
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 const CONTROLS_TIMEOUT = 3200;
 
+/* ----------------------------- quality tiers ----------------------------- */
+
+const AUTO = -1;
+const QUALITY_STORAGE_KEY = "hinataw:quality";
+const QUALITY_TIERS = [
+  { label: "1080p", height: 1080 },
+  { label: "720p", height: 720 },
+  { label: "480p", height: 480 },
+] as const;
+const TIER_HEIGHTS: number[] = QUALITY_TIERS.map((tier) => tier.height);
+
+/** "720p" → 720, "854p" → snapped to 720, "Auto"/unknown → null. */
+function tierForLabel(label: string): number | null {
+  const parsed = Number(label.match(/(\d{3,4})\s*p\b/i)?.[1] ?? NaN);
+  if (!Number.isFinite(parsed)) return null;
+  return TIER_HEIGHTS.reduce((best, height) =>
+    Math.abs(height - parsed) < Math.abs(best - parsed) ? height : best,
+  );
+}
+
+function readStoredHeight(): number | null {
+  try {
+    const stored = Number(window.localStorage.getItem(QUALITY_STORAGE_KEY));
+    return TIER_HEIGHTS.includes(stored) ? stored : null;
+  } catch {
+    return null;
+  }
+}
+
+function storeHeight(height: number | null) {
+  try {
+    if (height === null) window.localStorage.removeItem(QUALITY_STORAGE_KEY);
+    else window.localStorage.setItem(QUALITY_STORAGE_KEY, String(height));
+  } catch {
+    /* storage unavailable (private mode) — the choice just won't persist */
+  }
+}
+
 /** Inline (non-portal) dropdown so menus stay visible in fullscreen. */
 function PlayerMenu({
   label,
@@ -144,10 +182,15 @@ export function VideoPlayer({
   const startAtRef = useRef(startAt);
 
   const [activeSrc, setActiveSrc] = useState(src);
-  const [hlsLevels, setHlsLevels] = useState<{ index: number; label: string }[]>([]);
-  const [selectedLevel, setSelectedLevel] = useState(-1);
-  const [selectedQuality, setSelectedQuality] = useState(-1);
-  const [effectiveLevel, setEffectiveLevel] = useState<number | null>(null);
+  const [hlsLevels, setHlsLevels] = useState<{ index: number; label: string; height?: number }[]>([]);
+  // The tier the viewer asked for — localStorage-backed, -1 = Auto (adaptive).
+  // The viewer's quality pick — localStorage-backed, -1 = Auto (adaptive).
+  const [tier, setTier] = useState<number>(() => readStoredHeight() ?? AUTO);
+  const tierRef = useRef(tier);
+
+  useEffect(() => {
+    tierRef.current = tier;
+  }, [tier]);
   const [playing, setPlaying] = useState(false);
   const [buffering, setBuffering] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -175,8 +218,20 @@ export function VideoPlayer({
   }, [startAt]);
 
   useEffect(() => {
+    // Progressive sources: honour the stored tier from the very first load.
+    const initial = manualRef.current;
+    if (tierRef.current > 0 && !isHlsSource(src) && initial.length > 0) {
+      const sorted = [...initial].sort((a, b) => a.height - b.height);
+      const source = sorted.find((item) => item.height <= tierRef.current) ?? sorted[0];
+      if (source) {
+        setActiveSrc(source.url);
+        resumedRef.current = false;
+        setShowResume(startAtRef.current > 10);
+        setError(null);
+        return;
+      }
+    }
     setActiveSrc(src);
-    setSelectedQuality(0);
     resumedRef.current = false;
     setShowResume(startAtRef.current > 10);
     setError(null);
@@ -220,24 +275,19 @@ export function VideoPlayer({
           }));
           setHlsLevels(levels);
 
-          // Prefer a stored quality preference. If none, pick a level that matches
-          // the current player size so the stream starts at a sensible bandwidth.
-          let chosenIndex = qualities.findIndex((q) => q.label !== "Auto");
-          if (chosenIndex < 0 && levels.length > 0) {
-            const targetHeight = Math.min(video.clientHeight || 180, levels[levels.length - 1]?.height ?? 720);
-            chosenIndex = levels.reduce((best, level, index) => {
-              const candidate = Math.abs((level.height ?? targetHeight) - targetHeight);
-              return candidate < Math.abs((levels[best]?.height ?? targetHeight) - targetHeight) ? index : best;
-            }, 0);
+          // A saved quality choice is pinned as soon as the manifest is read;
+          // otherwise hls.js adapts to bandwidth and player size.
+          const wanted = tierRef.current;
+          if (wanted > 0 && hls) {
+            const target = levels
+              .filter((level): level is typeof level & { height: number } => level.height !== undefined)
+              .sort((a, b) => Math.abs(a.height - wanted) - Math.abs(b.height - wanted))[0];
+            if (target) {
+              hls.currentLevel = target.index;
+            }
           }
-          setSelectedQuality(chosenIndex < 0 ? -1 : chosenIndex);
 
           if (autoPlay) void video.play().catch(() => undefined);
-        });
-
-        hls.on(HlsCtor.Events.LEVEL_SWITCHED, (_event, data) => {
-          if (hls?.autoLevelEnabled) setSelectedLevel(-1);
-          else setSelectedLevel(data.level);
         });
 
         hls.on(HlsCtor.Events.ERROR, (_event, data) => {
@@ -252,24 +302,6 @@ export function VideoPlayer({
             return;
           }
           setError("Stream interrupted. Tap retry to reconnect.");
-        });
-        hls.on(HlsCtor.Events.LEVEL_SWITCHED, () => {
-          const current = hls;
-          if (current && selectedLevel >= 0 && selectedLevel < current.levels.length) {
-            const levelList = current.levels;
-            const level = levelList[selectedLevel];
-            if (videoRef.current && videoRef.current.videoWidth > 0) {
-              const targetSize = Math.min(videoRef.current.clientHeight, level.height ?? 0);
-              if (Math.abs((level.height ?? 0) - targetSize) > 120) {
-                const next = levelList.reduce((best, candidate, index) => {
-                  if (index === selectedLevel) return best;
-                  return Math.abs((candidate.height ?? 0) - targetSize) < Math.abs((levelList[best]?.height ?? 0) - targetSize) ? index : best;
-                }, selectedLevel);
-                setSelectedLevel(next);
-                if (current.currentLevel !== next) current.currentLevel = next;
-              }
-            }
-          }
         });
         return;
       }
@@ -431,7 +463,6 @@ export function VideoPlayer({
 
   /* ------------------------------ scrubbing ----------------------------- */
   const barRef = useRef<HTMLDivElement>(null);
-  const hasManualQualities = qualities.length > 1;
 
   const timeFromPointer = useCallback(
     (clientX: number) => {
@@ -479,32 +510,59 @@ export function VideoPlayer({
 
   const progressPercent = duration > 0 ? (position / duration) * 100 : 0;
 
-  const qualityOptions = useMemo(() => {
-    if (hlsLevels.length > 0) {
-      return hlsLevels
-        .slice()
-        .sort((a, b) => parseInt(b.label) - parseInt(a.label));
-    }
-    return qualities.map((quality, index) => ({ index, label: quality.label }));
-  }, [hlsLevels, qualities]);
+  /** Per-quality files saved on the episode, snapped to the 1080/720/480 tiers. */
+  const manualSources = useMemo(
+    () =>
+      qualities
+        .map((quality) => ({ url: quality.url, height: tierForLabel(quality.label) }))
+        .filter((source): source is { url: string; height: number } => source.height !== null),
+    [qualities],
+  );
+  // Read through a ref inside effects so `[src]` stays the only reset trigger.
+  const manualRef = useRef(manualSources);
+  manualRef.current = manualSources;
 
-  const applyLevel = (index: number) => {
-    setSelectedLevel(index);
-    setSelectedQuality(index + 1);
-    if (hlsRef.current) {
-      hlsRef.current.currentLevel = index;
-    } else if (index > 0 && qualities[index - 1]) {
-      const video = videoRef.current;
-      const wasPlaying = video ? !video.paused : false;
-      const at = video?.currentTime ?? 0;
-      setActiveSrc(qualities[index - 1].url);
-      window.setTimeout(() => {
-        const next = videoRef.current;
-        if (!next) return;
-        next.currentTime = at;
-        if (wasPlaying) void next.play().catch(() => undefined);
-      }, 120);
+  const swapSource = (url: string) => {
+    const video = videoRef.current;
+    const wasPlaying = video ? !video.paused : false;
+    const at = video?.currentTime ?? 0;
+    setActiveSrc(url);
+    window.setTimeout(() => {
+      const next = videoRef.current;
+      if (!next) return;
+      next.currentTime = at;
+      if (wasPlaying) void next.play().catch(() => undefined);
+    }, 120);
+  };
+
+  const applyTier = (next: number) => {
+    setTier(next);
+    storeHeight(next === AUTO ? null : next);
+
+    const hls = hlsRef.current;
+    if (hls && hlsLevels.length > 0) {
+      if (next === AUTO) {
+        // Back to adaptive: let hls.js pick (player-size cap applies in auto).
+        hls.currentLevel = -1;
+        return;
+      }
+      // Pin the rendition closest to the requested tier. A manual currentLevel
+      // is uncapped, so an explicit 1080p pick wins even in a small window.
+      const target = hlsLevels
+        .filter((level): level is typeof level & { height: number } => level.height !== undefined)
+        .sort((a, b) => Math.abs(a.height - next) - Math.abs(b.height - next))[0];
+      if (target) hls.currentLevel = target.index;
+      return;
     }
+
+    if (next === AUTO) {
+      if (activeSrc !== src) swapSource(src);
+      return;
+    }
+    // No manifest: swap the saved per-quality file, keeping time and play state.
+    const sorted = [...manualSources].sort((a, b) => a.height - b.height);
+    const source = sorted.find((item) => item.height <= next) ?? sorted[0];
+    if (source) swapSource(source.url);
   };
 
   const retry = () => {
@@ -771,55 +829,39 @@ export function VideoPlayer({
               </span>
 
               <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-                {(qualityOptions.length > 0 || hasManualQualities) && (
-                  <PlayerMenu
-                    label={
-                      hlsLevels.length > 0
-                        ? selectedLevel < 0
-                          ? "Auto"
-                          : hlsLevels.find((level) => level.index === selectedLevel)?.label ?? "Auto"
-                        : qualities[selectedQuality - 1]?.label ?? "Auto"
-                    }
-                    icon={<Settings2 className="size-3.5" />}
-                  >
-                    {(close) => (
-                      <>
-                        <p className="px-3 pt-1.5 pb-1 text-[10px] font-bold tracking-wider text-white/45 uppercase">
-                          Quality
-                        </p>
+                <PlayerMenu
+                  label={tier === AUTO ? "Auto" : `${tier}p`}
+                  icon={<Settings2 className="size-3.5" />}
+                >
+                  {(close) => (
+                    <>
+                      <p className="px-3 pt-1.5 pb-1 text-[10px] font-bold tracking-wider text-white/45 uppercase">
+                        Quality
+                      </p>
+                      <MenuItem
+                        active={tier === AUTO}
+                        onClick={() => {
+                          applyTier(AUTO);
+                          close();
+                        }}
+                      >
+                        Auto (adaptive)
+                      </MenuItem>
+                      {QUALITY_TIERS.map((tierOption) => (
                         <MenuItem
-                          active={
-                            hlsLevels.length > 0
-                              ? selectedLevel < 0
-                              : selectedQuality === 0
-                          }
+                          key={tierOption.label}
+                          active={tier === tierOption.height}
                           onClick={() => {
-                            applyLevel(-1);
+                            applyTier(tierOption.height);
                             close();
                           }}
                         >
-                          Auto (adaptive)
+                          {tierOption.label}
                         </MenuItem>
-                        {qualityOptions.map((option) => (
-                          <MenuItem
-                            key={`${option.index}-${option.label}`}
-                            active={
-                              hlsLevels.length > 0
-                                ? selectedLevel === option.index
-                                : selectedQuality === option.index + 1
-                            }
-                            onClick={() => {
-                              applyLevel(option.index);
-                              close();
-                            }}
-                          >
-                            {option.label}
-                          </MenuItem>
-                        ))}
-                      </>
-                    )}
-                  </PlayerMenu>
-                )}
+                      ))}
+                    </>
+                  )}
+                </PlayerMenu>
 
                 <PlayerMenu label={`${speed}x`} icon={<Gauge className="size-3.5" />}>
                   {(close) => (
