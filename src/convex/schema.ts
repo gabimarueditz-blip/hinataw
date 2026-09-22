@@ -136,28 +136,6 @@ const schema = defineSchema(
       target: v.optional(v.string()),
       createdAt: v.number(),
     }).index("by_created", ["createdAt"]),
-
-    /* -------------------------------------------------------------- */
-    /* Donations (Razorpay)                                            */
-    /* -------------------------------------------------------------- */
-
-    donations: defineTable({
-      userId: v.id("users"),
-      orderId: v.string(),
-      paymentId: v.optional(v.string()),
-      amountInRupees: v.number(),
-      currency: v.string(),
-      status: v.union(
-        v.literal("created"),
-        v.literal("paid"),
-        v.literal("cancelled"),
-      ),
-      note: v.optional(v.string()),
-      donorName: v.optional(v.string()),
-      razorpaySignatureVerified: v.optional(v.boolean()),
-      createdAt: v.number(),
-      paidAt: v.optional(v.number()),
-    }).index("by_order", ["orderId"]),
   },
   {
     schemaValidation: false,
