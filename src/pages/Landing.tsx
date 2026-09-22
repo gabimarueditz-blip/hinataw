@@ -6,20 +6,6 @@ import { cn } from "@/lib/utils";
 import { clayPosterBackground, hueFromString } from "@/lib/media";
 import { useQuery } from "convex/react";
 import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  Clapperboard,
-  CloudUpload,
-  Film,
-  Gauge,
-  History,
-  Link2,
-  Lock,
-  Play,
-  ShieldCheck,
-  Sparkles,
-  Timer,
-} from "lucide-react";
 import { Link } from "react-router";
 
 const FEATURES = [
@@ -87,13 +73,11 @@ export default function Landing() {
       <div aria-hidden className="clay-blob fixed bottom-0 left-1/3 size-80 bg-clay-mint/30" />
 
       <header className="sticky top-0 z-40 px-4 py-3 sm:px-8">
-        <div className="clay mx-auto flex max-w-6xl items-center justify-between gap-3 rounded-full px-4 py-2.5">
-          <Link to="/" className="flex items-center gap-3 no-underline">
-            <span className="clay-sm relative flex size-10 items-center justify-center overflow-hidden">
-              <span className="absolute inset-0 bg-gradient-to-br from-clay-blush via-clay-lilac to-clay-sky" />
-              <Clapperboard className="relative size-5 text-zinc-900/80" />
-            </span>
-            <span className="leading-none">
+        <div className="clay mx-auto flex max-w-6xl items-center justify-between gap-3 rounded-full px-4 py-2.5">            <Link to="/" className="flex items-center gap-3 no-underline">
+              <span className="clay-sm relative flex size-10 items-center justify-center overflow-hidden">
+                <BrandArt className="size-[88%]" />
+              </span>
+              <span className="leading-none">
               <span className="font-display block text-lg font-extrabold">
                 Hinataw<span className="text-primary">.exe</span>
               </span>

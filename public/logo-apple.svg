@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <defs>
+    <linearGradient id="warmGlass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4ede1"/>
+      <stop offset="1" stop-color="#ecdec8"/>
+    </linearGradient>
+    <radialGradient id="hub" cx="0.5" cy="0.4" r="0.55">
+      <stop offset="0" stop-color="#9aa8c8"/>
+      <stop offset="0.75" stop-color="#6f83a3"/>
+      <stop offset="1" stop-color="#2b4a76"/>
+    </radialGradient>
+    <filter id="soft" x="-15%" y="-15%" width="130%" height="130%">
+      <feGaussianBlur stdDeviation="2.4"/>
+    </filter>
+  </defs>
+
+  <rect width="180" height="180" rx="40" fill="url(#warmGlass)"/>
+  <rect width="180" height="180" rx="40" fill="url(#warmGlass)" opacity="0.45" transform="translate(-5,-5)"/>
+
+  <!-- soft snowy floor glow -->
+  <ellipse cx="90" cy="150" rx="62" ry="10" fill="#ffffff" opacity="0.32" filter="url(#soft)"/>
+
+  <!-- hood rim off-white bleeds -->
+  <path d="M100 40 q-42 2 -50 16 q-6 8 -2 13
+           q5 -1 8 -1 q9 -1 12 1 q10 -1 14 4
+           q7 4 8 14 q2 8 -2 12 q-2 2 -3 -1
+           q-3 -6 -8 -12 q-4 -8 -14 -6 q-8 8 -16 0 z"
+        fill="#ffffff" opacity="0.55" transform="translate(6,12)"/>
+  <path d="M100 40 q-42 2 -50 16 q-6 8 -2 13
+           q5 -1 8 -1 q9 -1 12 1 q10 -1 14 4
+           q7 4 8 14 q2 8 -2 12 q-2 2 -3 -1
+           q-3 -6 -8 -12 q-4 -8 -14 -6 q-8 8 -16 0 z"
+        fill="#ffffff" opacity="0.28"/>
+
+  <!-- personality: lavender Byakugan eye navy-violet -->
+  <circle cx="90" cy="92" r="34" fill="url(#hub)"/>
+  <circle cx="90" cy="92" r="16.5" fill="#08060e"/>
+  <circle cx="90" cy="92" r="5.6" fill="#c3b0e6"/>
+  <circle cx="90" cy="92" r="2.2" fill="#1b2238"/>
+  <circle cx="86" cy="88" r="1.6" fill="#ffffff" opacity="0.85"/>
+
+  <!-- eyelash stroke -->
+  <path stroke="#08060e" stroke-width="2.4" stroke-linecap="round" fill="none"
+        d="M58 90 q30 -8 62 0 q6 1 6 4"/>
+  <path stroke="#08060e" stroke-width="2.4" stroke-linecap="round" fill="none"
+        d="M122 92 q-6 1 -12 3 q-4 4 -8 6 q-2 2 -3 0"/>
+
+  <!-- soft haze brushed silicone -->
+  <ellipse cx="90" cy="92" rx="52" ry="46" fill="#0b0714" opacity="0.32" filter="url(#soft)"/>
+</svg>

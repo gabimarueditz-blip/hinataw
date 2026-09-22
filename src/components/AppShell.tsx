@@ -1,15 +1,8 @@
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  Clapperboard,
-  Compass,
-  Home,
-  LogOut,
-  Search,
-  Sparkles,
-  UserRound,
-} from "lucide-react";
+import { BrandArt } from "./BrandArt";
+import { Compass, Home, LogOut, Search, Sparkles, UserRound } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { UploadDock } from "@/components/upload-queue";
@@ -25,8 +18,7 @@ export function BrandMark({ compact = false }: { compact?: boolean }) {
   return (
     <Link to="/home" className="flex items-center gap-3 no-underline">
       <span className="clay-sm relative flex size-10 items-center justify-center overflow-hidden">
-        <span className="absolute inset-0 bg-gradient-to-br from-clay-blush via-clay-lilac to-clay-sky opacity-90" />
-        <Clapperboard className="relative size-5 text-zinc-900/80" />
+        <BrandArt className="size-6" />
       </span>
       {!compact && (
         <span className="leading-none">

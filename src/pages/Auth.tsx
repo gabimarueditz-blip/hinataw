@@ -8,9 +8,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
-  Clapperboard,
-  Eye,
-  EyeOff,
   Info,
   KeyRound,
   Loader2,
@@ -18,6 +15,7 @@ import {
   ShieldCheck,
   UserRound,
 } from "lucide-react";
+import { BrandArt } from "@/components/BrandArt";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
@@ -64,7 +62,7 @@ export default function AuthPage({ redirectAfterAuth = "/home" }: AuthProps) {
     let cancelled = false;
     (async () => {
       try {
-        const result = await adminLogin({ adminId, password });
+        await adminLogin({ adminId, password });
         if (cancelled) return;
         settledRef.current = true;
         toast.success("Studio unlocked");
@@ -72,13 +70,8 @@ export default function AuthPage({ redirectAfterAuth = "/home" }: AuthProps) {
         navigate("/studio", { replace: true });
       } catch (err) {
         if (cancelled) return;
-        const message =
-          err instanceof Error ? err.message : "Admin sign-in failed.";
-        setError(
-          message.includes("Invalid")
-            ? "Invalid admin ID or password."
-            : message,
-        );
+        const message = err instanceof Error ? err.message : "Admin sign-in failed.";
+        setError(message.includes("Invalid") ? "Invalid admin ID or password." : message);
         setPendingAdmin(false);
         setBusy(false);
         intentRef.current = null;
@@ -129,11 +122,7 @@ export default function AuthPage({ redirectAfterAuth = "/home" }: AuthProps) {
       navigate("/studio", { replace: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Admin sign-in failed.";
-      setError(
-        message.includes("Invalid")
-          ? "Invalid admin ID or password."
-          : message,
-      );
+      setError(message.includes("Invalid") ? "Invalid admin ID or password." : message);
       setBusy(false);
       intentRef.current = null;
     }
@@ -163,16 +152,12 @@ export default function AuthPage({ redirectAfterAuth = "/home" }: AuthProps) {
         >
           <div className="clay p-6 sm:p-8">
             <div className="flex flex-col items-center text-center">
-              <span className="clay-sm relative flex size-16 items-center justify-center overflow-hidden">
-                <span className="absolute inset-0 bg-gradient-to-br from-clay-blush via-clay-lilac to-clay-sky" />
-                <Clapperboard className="relative size-8 text-zinc-900/80" />
+              <span className="clay-sm relative flex size-14 items-center justify-center overflow-hidden">
+                <BrandArt className="size-[72%]" />
               </span>
-              <h1 className="font-display mt-4 text-2xl font-extrabold">
+              <h1 className="font-display mt-3 text-2xl font-extrabold">
                 Hinataw<span className="text-primary">.exe</span>
               </h1>
-              <p className="mt-1 text-xs font-bold tracking-[0.2em] text-muted-foreground uppercase">
-                by ayush malik
-              </p>
             </div>
 
             <button
