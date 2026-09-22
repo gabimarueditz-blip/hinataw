@@ -1,11 +1,25 @@
 import { api } from "@/convex/_generated/api";
-import { accentOf, PosterArt, TypePill } from "@/components/catalog-ui";
+import { BrandArt } from "@/components/BrandArt";
+import { PosterArt, TypePill } from "@/components/catalog-ui";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { clayPosterBackground, hueFromString } from "@/lib/media";
 import { useQuery } from "convex/react";
 import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  CloudUpload,
+  Film,
+  Gauge,
+  History,
+  Link2,
+  Lock,
+  Play,
+  ShieldCheck,
+  Sparkles,
+  Timer,
+} from "lucide-react";
 import { Link } from "react-router";
 
 const FEATURES = [

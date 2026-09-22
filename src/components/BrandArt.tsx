@@ -31,7 +31,6 @@ export function BrandArt(props: SVGProps<SVGSVGElement>) {
         <path className="bg" d="M32 20 q8 -6 14 0 q10 -4 16 0 q6 -7 12 3 q9 -8 18 4 q12 -5 20 1 q10 -9 16 0 l0 6 -151 0 z" />
         <path
           fill="#eef3f8"
-          opacity="0.85"
           d="M32 22 q10 -2 16 2 q10 -2 16 2 q10 -2 14 2 q12 -3 18 1 q12 -2 18 2 l0 2 -152 0 z"
           opacity={0.9}
         />

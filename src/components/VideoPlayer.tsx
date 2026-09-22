@@ -216,6 +216,7 @@ export function VideoPlayer({
           const levels = (hls?.levels ?? []).map((level, index) => ({
             index,
             label: level.height ? `${level.height}p` : `${Math.round((level.bitrate ?? 0) / 1000)}kbps`,
+            height: level.height ?? undefined,
           }));
           setHlsLevels(levels);
 
@@ -253,17 +254,19 @@ export function VideoPlayer({
           setError("Stream interrupted. Tap retry to reconnect.");
         });
         hls.on(HlsCtor.Events.LEVEL_SWITCHED, () => {
-          if (hls?.levels && selectedLevel >= 0 && selectedLevel < hls.levels.length) {
-            const level = hls.levels[selectedLevel];
+          const current = hls;
+          if (current && selectedLevel >= 0 && selectedLevel < current.levels.length) {
+            const levelList = current.levels;
+            const level = levelList[selectedLevel];
             if (videoRef.current && videoRef.current.videoWidth > 0) {
               const targetSize = Math.min(videoRef.current.clientHeight, level.height ?? 0);
               if (Math.abs((level.height ?? 0) - targetSize) > 120) {
-                const next = hls.levels.reduce((best, candidate, index) => {
+                const next = levelList.reduce((best, candidate, index) => {
                   if (index === selectedLevel) return best;
-                  return Math.abs((candidate.height ?? 0) - targetSize) < Math.abs((hls.levels[best]?.height ?? 0) - targetSize) ? index : best;
+                  return Math.abs((candidate.height ?? 0) - targetSize) < Math.abs((levelList[best]?.height ?? 0) - targetSize) ? index : best;
                 }, selectedLevel);
                 setSelectedLevel(next);
-                if (hls.currentLevel !== next) hls.currentLevel = next;
+                if (current.currentLevel !== next) current.currentLevel = next;
               }
             }
           }
