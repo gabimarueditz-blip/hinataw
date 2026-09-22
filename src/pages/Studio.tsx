@@ -876,8 +876,8 @@ function StudioWorkspace() {
               </li>
               <li className="flex gap-2">
                 <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-clay-mint" />
-                Playback is stream-only: the player never renders a download
-                control, and links are validated before they are stored.
+                Guests can stream or download any published episode; links are
+                still validated before they are stored.
               </li>
             </ul>
           </div>

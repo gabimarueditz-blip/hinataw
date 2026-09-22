@@ -1,4 +1,5 @@
 import { api } from "@/convex/_generated/api";
+import { EpisodeDownloadButton } from "@/components/EpisodeDownload";
 import {
   HeroBackdrop,
   PosterArt,
@@ -189,10 +190,11 @@ export default function SeriesDetail() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: Math.min(index * 0.04, 0.4) }}
+                  className="clay clay-press flex items-center gap-2 p-3 sm:gap-3 sm:p-4"
                 >
                   <Link
                     to={`/watch/${episode._id}`}
-                    className="clay clay-press flex items-center gap-4 p-3 no-underline sm:p-4"
+                    className="flex min-w-0 flex-1 items-center gap-4 no-underline"
                   >
                     <span
                       className={cn(
@@ -240,6 +242,11 @@ export default function SeriesDetail() {
                       <Play className="size-4 fill-current" />
                     </span>
                   </Link>
+
+                  <EpisodeDownloadButton
+                    episode={episode}
+                    seriesTitle={series.title}
+                  />
                 </motion.li>
               );
             })}

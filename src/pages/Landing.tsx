@@ -171,7 +171,7 @@ export default function Landing() {
               {[
                 { k: "3", v: "HLS renditions" },
                 { k: "∞", v: "Background uploads" },
-                { k: "0", v: "Downloads allowed" },
+                { k: "1-click", v: "Episode downloads" },
               ].map((stat) => (
                 <div key={stat.v} className="clay-sm px-4 py-3">
                   <dt className="font-display text-2xl font-extrabold text-primary">
@@ -409,8 +409,8 @@ export default function Landing() {
               Pop the clay lid open
             </h2>
             <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
-              Streaming only — no downloads, token-friendly playback, and screen
-              recording stays firmly in the guest's imagination.
+              Stream or save — grab any episode in full quality, with token-friendly
+              playback and resume-anywhere history across every device.
             </p>
             <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
               <Link to="/auth">

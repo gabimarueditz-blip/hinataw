@@ -81,7 +81,7 @@ export default function Home() {
           <p className="mt-1.5 text-sm text-muted-foreground">
             {user?.role === "admin"
               ? "Guests see only published series — your drafts stay hidden."
-              : "Adaptive quality, resume anywhere, no downloads."}
+              : "Adaptive quality, 1-click downloads, resume anywhere."}
           </p>
         </div>
         <Link to="/search">

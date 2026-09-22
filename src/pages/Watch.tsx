@@ -1,5 +1,6 @@
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { EpisodeDownloadButton } from "@/components/EpisodeDownload";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { Button } from "@/components/ui/button";
 import { formatClock, formatDuration } from "@/lib/media";
@@ -10,7 +11,6 @@ import {
   CheckCircle2,
   Layers,
   ListVideo,
-  Lock,
   Signal,
 } from "lucide-react";
 import { useCallback } from "react";
@@ -150,7 +150,7 @@ export default function Watch() {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="clay-sm flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold tracking-wide text-clay-sky uppercase">
               <Signal className="size-3" />
               {episode.sourceKind === "hls" || episode.hlsUrl ? "Adaptive HLS" : "Direct stream"}
@@ -161,10 +161,7 @@ export default function Watch() {
                 {episode.qualities?.length} qualities
               </span>
             )}
-            <span className="clay-sm flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold tracking-wide text-clay-butter uppercase">
-              <Lock className="size-3" />
-              Streaming only
-            </span>
+            <EpisodeDownloadButton episode={episode} seriesTitle={series?.title} />
           </div>
         </div>
 
