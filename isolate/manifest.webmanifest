@@ -1,0 +1,17 @@
+{
+  "name": "Hinataw.exe — Anime & Movie Streaming",
+  "short_name": "Hinataw.exe",
+  "description": "Clay-soft anime and movie streaming with adaptive HLS playback, resume-anywhere history and an admin studio.",
+  "start_url": "/home",
+  "display": "standalone",
+  "background_color": "#2b2338",
+  "theme_color": "#2b2338",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
