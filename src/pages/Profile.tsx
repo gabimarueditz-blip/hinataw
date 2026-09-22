@@ -1,6 +1,7 @@
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { DonateButton } from "@/components/DonateButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatClock, timeAgo } from "@/lib/media";
@@ -113,6 +114,7 @@ export default function Profile() {
                 Back to streaming
               </Button>
             </Link>
+            <DonateButton variant="button" label="Donate" />
             {isAdmin && (
               <>
                 <Link to="/studio">

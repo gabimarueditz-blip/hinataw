@@ -1,5 +1,6 @@
 import { api } from "@/convex/_generated/api";
 import { BrandArt } from "@/components/BrandArt";
+import { DonateButton } from "@/components/DonateButton";
 import { PosterArt, TypePill } from "@/components/catalog-ui";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -441,8 +442,9 @@ export default function Landing() {
           <p className="text-xs text-muted-foreground">
             Hinataw.exe · clay-soft streaming · built with Convex, React and HLS
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="flex items-center gap-3 text-xs text-muted-foreground">
             Admin studio access is private — guests stream, admins publish.
+            <DonateButton label="Donate" />
           </p>
         </div>
       </footer>

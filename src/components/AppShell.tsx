@@ -6,6 +6,7 @@ import { Compass, Home, LogOut, Search, Sparkles, UserRound } from "lucide-react
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { UploadDock } from "@/components/upload-queue";
+import { DonateButton } from "@/components/DonateButton";
 
 const NAV = [
   { to: "/home", label: "Home", icon: Home },
@@ -116,6 +117,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
 
           <div className="flex items-center gap-2">
             {isAdmin && <AdminChip />}
+            <DonateButton variant="icon" />
             <NavLink
               to="/profile"
               className="clay-sm clay-press flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-muted-foreground no-underline hover:text-foreground"
