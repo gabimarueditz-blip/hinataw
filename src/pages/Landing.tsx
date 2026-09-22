@@ -102,6 +102,7 @@ export default function Landing() {
             </span>
           </Link>
           <div className="flex items-center gap-2">
+            <DonateButton label="Donate" />
             <Link to="/auth?mode=admin" className="hidden sm:block">
               <Button
                 variant="ghost"
@@ -442,9 +443,12 @@ export default function Landing() {
           <p className="text-xs text-muted-foreground">
             Hinataw.exe · clay-soft streaming · built with Convex, React and HLS
           </p>
-          <p className="flex items-center gap-3 text-xs text-muted-foreground">
-            Admin studio access is private — guests stream, admins publish.
-            <DonateButton label="Donate" />
+          <p className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+            <span>
+              Hinataw.exe runs on donations — no ads, no tracking, nothing for sale.
+              Your cooperation keeps it free.
+            </span>
+            <DonateButton label="Donate to the creator" />
           </p>
         </div>
       </footer>
