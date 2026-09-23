@@ -97,8 +97,7 @@ class RootErrorBoundary extends React.Component<
   }
 }
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
-
+const convexUrl = import.meta.env.VITE_CONVEX_URL;
 
 
 function RouteSyncer() {
@@ -125,53 +124,67 @@ function RouteSyncer() {
 }
 
 
+const application = convexUrl ? (
+  <ConvexAuthProvider client={new ConvexReactClient(convexUrl)}>
+    <UploadQueueProvider>
+      <BrowserRouter>
+        <RouteSyncer />
+        <Suspense fallback={<RouteLoading />}>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route
+              path="/auth"
+              element={<AuthPage redirectAfterAuth="/home" />}
+            />
+
+            {/* protected streaming experience */}
+            <Route
+              element={
+                <RequireAuth>
+                  <AppShell />
+                </RequireAuth>
+              }
+            >
+              <Route path="/home" element={<Home />} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route path="/characters" element={<Characters />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/series/:seriesId" element={<SeriesDetail />} />
+              <Route path="/watch/:episodeId" element={<Watch />} />
+              <Route path="/studio" element={<Studio />} />
+              <Route
+                path="/dashboard"
+                element={<Navigate to="/home" replace />}
+              />
+            </Route>
+
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+      <Toaster />
+    </UploadQueueProvider>
+  </ConvexAuthProvider>
+) : (
+  <div className="min-h-screen bg-background px-6 py-16 text-foreground">
+    <main className="mx-auto max-w-xl">
+      <h1 className="text-2xl font-bold">Freebuff is not configured</h1>
+      <p className="mt-3 text-muted-foreground">
+        Add the VITE_CONVEX_URL environment variable to this deployment and
+        redeploy the app.
+      </p>
+    </main>
+  </div>
+);
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <RootErrorBoundary>
       <ToolbarErrorBoundary>
         <VlyToolbar />
       </ToolbarErrorBoundary>
-      <ConvexAuthProvider client={convex}>
-        <UploadQueueProvider>
-          <BrowserRouter>
-            <RouteSyncer />
-            <Suspense fallback={<RouteLoading />}>
-              <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route
-                  path="/auth"
-                  element={<AuthPage redirectAfterAuth="/home" />}
-                />
-
-                {/* protected streaming experience */}
-                <Route
-                  element={
-                    <RequireAuth>
-                      <AppShell />
-                    </RequireAuth>
-                  }
-                >
-                  <Route path="/home" element={<Home />} />
-                  <Route path="/search" element={<Search />} />
-                  <Route path="/categories" element={<Categories />} />
-                  <Route path="/characters" element={<Characters />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/series/:seriesId" element={<SeriesDetail />} />
-                  <Route path="/watch/:episodeId" element={<Watch />} />
-                  <Route path="/studio" element={<Studio />} />
-                  <Route
-                    path="/dashboard"
-                    element={<Navigate to="/home" replace />}
-                  />
-                </Route>
-
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-          <Toaster />
-        </UploadQueueProvider>
-      </ConvexAuthProvider>
+      {application}
     </RootErrorBoundary>
   </StrictMode>,
 );

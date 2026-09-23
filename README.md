@@ -62,6 +62,7 @@ Set these in the project's **Keys** tab:
 
 | Variable | Purpose |
 | --- | --- |
+| `VITE_CONVEX_URL` | The public URL of the Convex deployment used by the frontend |
 | `ADMIN_ID`, `ADMIN_PASSWORD` | Required for admin login — no built-in credentials exist |
 | `API_VIDEO_API_KEY` | Enable automatic 480p/720p/1080p HLS transcoding of uploads |
 
